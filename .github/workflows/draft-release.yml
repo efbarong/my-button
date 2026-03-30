@@ -63,8 +63,20 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create ${{ steps.version.outputs.new_tag }} \
-            --draft \
-            --title "${{ steps.version.outputs.new_tag }}" \
-            --generate-notes \
-            --notes-start-tag ${{ steps.version.outputs.last_tag }}
+          LAST_TAG="${{ steps.version.outputs.last_tag }}"
+          NEW_TAG="${{ steps.version.outputs.new_tag }}"
+
+          if git rev-parse "$LAST_TAG" >/dev/null 2>&1; then
+            echo "Using notes from $LAST_TAG"
+            gh release create "$NEW_TAG" \
+              --draft \
+              --title "$NEW_TAG" \
+              --generate-notes \
+              --notes-start-tag "$LAST_TAG"
+          else
+            echo "No previous tag found, generating notes from scratch"
+            gh release create "$NEW_TAG" \
+              --draft \
+              --title "$NEW_TAG" \
+              --generate-notes
+          fi
