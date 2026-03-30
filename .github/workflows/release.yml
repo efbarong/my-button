@@ -1,0 +1,53 @@
+name: Publish
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js (npm)
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify version matches tag
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          PACKAGE_VERSION=$(jq -r .version package.json)
+
+          echo "Tag version: $VERSION"
+          echo "Package version: $PACKAGE_VERSION"
+
+          if [ "$VERSION" != "$PACKAGE_VERSION" ]; then
+            echo "Version mismatch!"
+            exit 1
+          fi
+
+      - name: Setup Node.js (GitHub Packages)
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          registry-url: 'https://npm.pkg.github.com'
+
+      - name: Publish to GitHub Packages
+        run: |
+          npm publish || echo "Already published"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
