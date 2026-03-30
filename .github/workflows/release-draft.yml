@@ -93,6 +93,11 @@ jobs:
             NOTES="$NOTES\n### 📦 Others\n$(format_commits "$OTHERS")\n"
           fi
 
+          if [ -n "$LAST_TAG" ]; then
+            CHANGELOG_URL="${REPO_URL}/compare/${LAST_TAG}...${TAG}"
+            NOTES="$NOTES\n---\n\n**Full Changelog**: ${CHANGELOG_URL}\n"
+          fi
+
           echo -e "$NOTES" > notes.md
 
       - name: Create or replace draft release
