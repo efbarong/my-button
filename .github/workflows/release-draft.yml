@@ -20,38 +20,52 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Extract version from commit
+      - name: Extract version
         id: version
         run: |
           VERSION=$(jq -r .version package.json)
           TAG="v$VERSION"
 
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Get previous tag (exclude current)
+        id: prev
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+
+          LAST_TAG=$(git tag --sort=-v:refname | grep -v "^${TAG}$" | head -n 1 || true)
+
           echo "last_tag=$LAST_TAG" >> $GITHUB_OUTPUT
 
-      - name: Create tag
-        run: |
-          TAG="${{ steps.version.outputs.tag }}"
-          git tag "$TAG" || true
-          git push origin "$TAG" || true
+          echo "Previous tag: $LAST_TAG"
 
-      - name: Create draft release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create tag if not exists
         run: |
-          LAST_TAG="${{ steps.version.outputs.last_tag }}"
           TAG="${{ steps.version.outputs.tag }}"
+
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag already exists locally"
+          else
+            git tag "$TAG"
+          fi
+
+          git push origin "$TAG" || echo "Tag already exists remotely"
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          LAST_TAG="${{ steps.prev.outputs.last_tag }}"
           REPO_URL="https://github.com/${GITHUB_REPOSITORY}"
 
-          if git rev-parse "$LAST_TAG" >/dev/null 2>&1; then
+          if [ -n "$LAST_TAG" ] && git rev-parse "$LAST_TAG" >/dev/null 2>&1; then
             LOG=$(git log ${LAST_TAG}..HEAD --pretty=format:"%h|%s")
           else
             LOG=$(git log --pretty=format:"%h|%s")
           fi
 
+          # limpiar espacios
           LOG=$(echo "$LOG" | sed 's/^[[:space:]]*//')
 
           FEATURES=$(echo "$LOG" | grep -iE "^.*\|feat" || true)
@@ -60,6 +74,7 @@ jobs:
 
           format_commits () {
             echo "$1" | while IFS="|" read -r HASH MSG; do
+              [ -z "$HASH" ] && continue
               echo "- $MSG ([${HASH}](${REPO_URL}/commit/${HASH}))"
             done
           }
@@ -80,7 +95,21 @@ jobs:
 
           echo -e "$NOTES" > notes.md
 
-          gh release create "$NEW_TAG" \
-          --draft \
-          --title "$NEW_TAG" \
-          --notes-file notes.md
+      - name: Create or replace draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+
+          # eliminar draft existente del mismo tag si existe
+          IS_DRAFT=$(gh release view "$TAG" --json isDraft -q .isDraft 2>/dev/null || echo "")
+
+          if [ "$IS_DRAFT" = "true" ]; then
+            echo "Replacing existing draft for $TAG"
+            gh release delete "$TAG" --yes
+          fi
+
+          gh release create "$TAG" \
+            --draft \
+            --title "$TAG" \
+            --notes-file notes.md
