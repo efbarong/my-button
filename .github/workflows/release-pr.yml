@@ -21,6 +21,20 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Fail if draft release exists
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          DRAFT=$(gh release list --json isDraft,tagName -q '.[] | select(.isDraft==true) | .tagName' | head -n 1)
+
+          if [ -n "$DRAFT" ]; then
+            echo "❌ Draft release already exists: $DRAFT"
+            echo "You must publish or delete it before creating a new release PR."
+            exit 1
+          else
+            echo "✅ No draft releases found"
+          fi
+
       - name: Calculate next version
         id: version
         run: |
