@@ -1,0 +1,59 @@
+name: Release Draft
+
+on:
+  push:
+    branches: [master]
+
+concurrency:
+  group: release-draft-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  create-draft:
+    if: "contains(github.event.head_commit.message, 'chore(release)')"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from commit
+        id: version
+        run: |
+          VERSION=$(jq -r .version package.json)
+          TAG="v$VERSION"
+
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "last_tag=$LAST_TAG" >> $GITHUB_OUTPUT
+
+      - name: Create tag
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          git tag "$TAG" || true
+          git push origin "$TAG" || true
+
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          LAST_TAG="${{ steps.version.outputs.last_tag }}"
+
+          if git rev-parse "$LAST_TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" \
+              --draft \
+              --title "$TAG" \
+              --generate-notes \
+              --notes-start-tag "$LAST_TAG"
+          else
+            gh release create "$TAG" \
+              --draft \
+              --title "$TAG" \
+              --generate-notes
+          fi
