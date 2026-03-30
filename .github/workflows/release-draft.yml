@@ -44,36 +44,38 @@ jobs:
         run: |
           LAST_TAG="${{ steps.version.outputs.last_tag }}"
           TAG="${{ steps.version.outputs.tag }}"
+          REPO_URL="https://github.com/${GITHUB_REPOSITORY}"
 
           if git rev-parse "$LAST_TAG" >/dev/null 2>&1; then
-            LOG=$(git log ${LAST_TAG}..HEAD --pretty=format:"%s")
+            LOG=$(git log ${LAST_TAG}..HEAD --pretty=format:"%h|%s")
           else
-            LOG=$(git log --pretty=format:"%s")
+            LOG=$(git log --pretty=format:"%h|%s")
           fi
 
           LOG=$(echo "$LOG" | sed 's/^[[:space:]]*//')
 
-          FEATURES=$(echo "$LOG" | grep -iE "^feat" || true)
-          FIXES=$(echo "$LOG" | grep -iE "^fix" || true)
-          OTHERS=$(echo "$LOG" | grep -viE "^(feat|fix|chore\(release\))" || true)
+          FEATURES=$(echo "$LOG" | grep -iE "^.*\|feat" || true)
+          FIXES=$(echo "$LOG" | grep -iE "^.*\|fix" || true)
+          OTHERS=$(echo "$LOG" | grep -viE "^.*\|(feat|fix|chore\(release\))" || true)
+
+          format_commits () {
+            echo "$1" | while IFS="|" read -r HASH MSG; do
+              echo "- $MSG ([${HASH}](${REPO_URL}/commit/${HASH}))"
+            done
+          }
 
           NOTES=""
 
           if [ -n "$FEATURES" ]; then
-            NOTES="$NOTES\n### ✨ Features\n$(echo "$FEATURES" | sed 's/^/- /')\n"
+            NOTES="$NOTES\n### ✨ Features\n$(format_commits "$FEATURES")\n"
           fi
 
           if [ -n "$FIXES" ]; then
-            NOTES="$NOTES\n### 🐛 Fixes\n$(echo "$FIXES" | sed 's/^/- /')\n"
+            NOTES="$NOTES\n### 🐛 Fixes\n$(format_commits "$FIXES")\n"
           fi
 
           if [ -n "$OTHERS" ]; then
-            NOTES="$NOTES\n### 📦 Others\n$(echo "$OTHERS" | sed 's/^/- /')\n"
+            NOTES="$NOTES\n### 📦 Others\n$(format_commits "$OTHERS")\n"
           fi
 
           echo -e "$NOTES" > notes.md
-
-          gh release create "$TAG" \
-            --draft \
-            --title "$TAG" \
-            --notes-file notes.md
