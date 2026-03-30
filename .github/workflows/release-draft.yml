@@ -79,3 +79,8 @@ jobs:
           fi
 
           echo -e "$NOTES" > notes.md
+
+          gh release create "$NEW_TAG" \
+          --draft \
+          --title "$NEW_TAG" \
+          --notes-file notes.md
