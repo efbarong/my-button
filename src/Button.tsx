@@ -33,7 +33,7 @@ const styles: Record<string, React.CSSProperties> = {
     color: "#111827",
   },
   danger: {
-    backgroundColor: "#dc2626",
+    backgroundColor: "#c92f2f",
     color: "#ffffff",
   },
   success: {
