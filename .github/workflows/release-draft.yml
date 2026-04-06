@@ -117,4 +117,4 @@ jobs:
           gh release create "$TAG" \
             --draft \
             --title "$TAG" \
-            --notes-file notes.md
+            --generate-notes
