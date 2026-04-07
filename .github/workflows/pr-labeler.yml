@@ -16,6 +16,6 @@ jobs:
         with:
           fetch-depth: 0
       - name: Labeler
-        uses: actions/labeler@v6
+        uses: actions/labeler@v5
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
