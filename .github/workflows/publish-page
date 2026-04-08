@@ -1,0 +1,21 @@
+name: Publish page
+on:
+  release:
+    types: [published]
+
+jobs:
+  deploy-page:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Deploy page 🚀
+        uses: ./.github/actions/deploy-page
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          source_folder: docs
+          target_branch: docs
+          target_folder: docs
+          commit_message: 'docs: update doc page'
+          clean: true
