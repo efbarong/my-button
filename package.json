@@ -1,6 +1,6 @@
 {
   "name": "@efbarong/my-button",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A minimal React button component library",
   "type": "module",
   "main": "./dist/my-button.umd.cjs",
