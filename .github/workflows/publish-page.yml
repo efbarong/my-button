@@ -1,10 +1,11 @@
 name: Publish page
+
 on:
   release:
     types: [published]
 
 permissions:
-  contents: write 
+  contents: write
 
 jobs:
   deploy-page:
@@ -15,7 +16,8 @@ jobs:
           fetch-depth: 0
 
       - name: Build
-        run: echo "Build your page here, for example: npm run build"
+        run: |
+          echo "Build your page here, for example: npm run build"
 
       - name: Deploy page 🚀
         uses: dynamic-framework/.github/.github/actions/push-folder-page@feat/own-workflows-actions
