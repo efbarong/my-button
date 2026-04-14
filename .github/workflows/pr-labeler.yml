@@ -6,7 +6,4 @@ on:
 
 jobs:
   pr-labeler:
-    runs-on: ubuntu-latest
-    steps:
-      - name: PR Labeler
-        uses: dynamic-framework/.github/.github/workflows/pr-labeler.yml@feat/own-workflows-actions
+    uses: dynamic-framework/.github/.github/workflows/pr-labeler.yml@feat/own-workflows-actions
