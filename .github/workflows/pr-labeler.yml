@@ -6,4 +6,4 @@ on:
 
 jobs:
   pr-labeler:
-  uses: dynamic-framework/.github/.github/workflows/pr-labeler.yml@feat/own-workflows-actions
+    uses: dynamic-framework/.github/.github/workflows/pr-labeler.yml@feat/own-workflows-actions
