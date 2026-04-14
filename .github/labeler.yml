@@ -1,17 +1,17 @@
-feature:
+featurey:
   - head-branch: ["^feature/", "^feat/"]
 
-fix:
+fixy:
   - head-branch: ["^fix/", "^bug/"]
 
-enhancement:
+enhancementy:
   - head-branch: ["^enhancement/", "^improvement/"]
 
-refactor:
+refactory:
   - head-branch: ["^refactor/"]
 
-docs:
+docsy:
   - head-branch: ["^docs/"]
 
-chore:
+chorey:
   - head-branch: ["^chore/"]
