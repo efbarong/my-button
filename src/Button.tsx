@@ -1,6 +1,6 @@
 import React from "react";
 
-export type ButtonVariant = "primary" | "secondary" | "danger" | "success";
+export type ButtonVariant = "primary" | "secondary" | "danger" | "success" | "magenta";
 export type ButtonSize = "sm" | "md" | "lg";
 
 export interface ButtonProps
@@ -38,6 +38,10 @@ const styles: Record<string, React.CSSProperties> = {
   },
   success: {
     backgroundColor: "#025c00",
+    color: "#ffffff",
+  },
+  magenta: {
+    backgroundColor: "#ad0070",
     color: "#ffffff",
   },
   sm: { fontSize: "12px", padding: "6px 12px", height: "30px" },
