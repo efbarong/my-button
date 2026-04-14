@@ -2,6 +2,8 @@ name: PR Labeler
 
 on:
   pull_request:
+    branches:
+      - master
     types: [opened, synchronize, reopened]
 
 jobs:
