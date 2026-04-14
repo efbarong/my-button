@@ -13,3 +13,5 @@ jobs:
       pull-requests: write
       issues: write
     uses: dynamic-framework/.github/.github/workflows/pr-labeler.yml@feat/own-workflows-actions
+    with:
+      configuration-path: .github/labeler.yml
