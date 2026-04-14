@@ -18,7 +18,7 @@ jobs:
         run: echo "Build your page here, for example: npm run build"
 
       - name: Deploy page 🚀
-        uses: dynamic-framework/.github/.github/workflows/push-folder-page.yml@feat/own-workflows-actions
+        uses: dynamic-framework/.github/.github/actions/push-folder-page@feat/own-workflows-actions
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           source_folder: docs
