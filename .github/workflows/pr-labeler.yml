@@ -9,6 +9,7 @@ on:
 jobs:
   pr-labeler:
     permissions:
+      contents: read
       pull-requests: write
       issues: write
     uses: dynamic-framework/.github/.github/workflows/pr-labeler.yml@feat/own-workflows-actions
